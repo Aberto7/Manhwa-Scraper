@@ -1,14 +1,14 @@
 # Import necessary libraries and modules
-import hashlib  # For hashing image content
-import io  # For handling bytes streams
-import pandas as pd  # For handling CSV files
-import requests  # For making HTTP requests
-import os.path  # For file path operations
-import logging  # For logging errors
-from bs4 import BeautifulSoup  # For HTML parsing
-from pathlib import Path  # For handling file paths
-from PIL import Image  # For image processing
-from selenium import webdriver  # For web scraping with a headless browser
+import hashlib                              # For hashing image content
+import io                                   # For handling bytes streams
+import pandas as pd                         # For handling CSV files
+import requests                             # For making HTTP requests
+import os.path                              # For file path operations
+import logging                              # For logging errors
+from bs4 import BeautifulSoup               # For HTML parsing
+from pathlib import Path                    # For handling file paths
+from PIL import Image                       # For image processing
+from selenium import webdriver              # For web scraping with a headless browser
 from selenium.webdriver import EdgeOptions  # For configuring headless browser options
 
 # Configuring logging to write errors to a file
@@ -116,7 +116,7 @@ def main(chapters=1, image_custom_name_location=None):
             content = get_content_from_url(url)
             if content:
                 # Creating individual folders for each webpage
-                output_directory = Path(f"./Pictures/{url.split('/')[-2]}")
+                output_directory = Path(f"./Pictures/{url.split('/')[-2].split('-', 1)[1].replace('-', ' ').title()}")
                 output_directory.mkdir(parents=True, exist_ok=True)
 
                 for image_url, custom_name in parse_image_urls(content=content, custom_name_location=image_custom_name_location):
