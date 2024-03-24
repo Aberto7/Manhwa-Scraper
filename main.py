@@ -1,14 +1,14 @@
 # Import necessary libraries and modules
-import hashlib  # For hashing image content
-import io  # For handling bytes streams
-import pandas as pd  # For handling CSV files
-import requests  # For making HTTP requests
-import os.path  # For file path operations
-import logging  # For logging errors
-from bs4 import BeautifulSoup  # For HTML parsing
-from pathlib import Path  # For handling file paths
-from PIL import Image  # For image processing
-from selenium import webdriver  # For web scraping with a headless browser
+import hashlib                              # For hashing image content
+import io                                   # For handling bytes streams
+import pandas as pd                         # For handling CSV files
+import requests                             # For making HTTP requests
+import os.path                              # For file path operations
+import logging                              # For logging errors
+from bs4 import BeautifulSoup               # For HTML parsing
+from pathlib import Path                    # For handling file paths
+from PIL import Image                       # For image processing
+from selenium import webdriver              # For web scraping with a headless browser
 from selenium.webdriver import EdgeOptions  # For configuring headless browser options
 
 # Configuring logging to write errors to a file
@@ -50,20 +50,33 @@ def get_content_from_url(url):
         return None
 
 
-def parse_image_urls(content, custom_name_location=None):
+def parse_image_urls(content):
     try:
         # Parsing image URLs from HTML content using BeautifulSoup
         soup = BeautifulSoup(content, "html.parser")
         for i in soup.findAll('img', attrs={"class":"ts-main-image"}):
             if i:
                 image_url = i.get("src")
-                custom_name = i.find(custom_name_location)['title'] if custom_name_location and i.find(
-                custom_name_location) else None
                 if image_url:
-                    yield image_url.strip(), custom_name.strip() if custom_name else None
+                    yield image_url.strip()
     except Exception as e:
         # Logging errors encountered during parsing
-        logging.error(f"Error parsing content: {e}")
+        logging.error(f"Error parsing image URLs: {e}")
+
+def parse_and_get_name(content):
+    try:
+        # Parsing image URLs from HTML content using BeautifulSoup
+        soup = BeautifulSoup(content, "html.parser")
+        for div in soup.findAll('div', attrs={"class":"headpost"}):
+            if div:
+                custom_name_element = div.find("h1", attrs={"class": "entry-title"})
+                custom_name = custom_name_element.text.strip() if custom_name_element else None
+                if custom_name:
+                    yield custom_name
+    except Exception as e:
+        # Logging errors encountered during parsing
+        logging.error(f"Error parsing Name: {e}")
+
 
 
 def sanitize_filename(filename):
@@ -109,21 +122,23 @@ def get_website_urls(chapters=1):
         yield f'https://asuratoon.com/7367709877-myst-might-mayhem-chapter-{p}/'
 
 
-def main(chapters=1, image_custom_name_location=None):
+def main(chapters=1):
     # Main function to execute the scraping and saving process
     with CSVManager("links.csv") as csv_manager:
         for url in get_website_urls(chapters):
             content = get_content_from_url(url)
             if content:
-                # Creating individual folders for each webpage
-                output_directory = Path(f"./Pictures/{url.split('/')[-2]}")
+                output_directory = Path(f"./Pictures/{url.split('/')[-2].split('-', 1)[1].replace('-', ' ').title()}")
                 output_directory.mkdir(parents=True, exist_ok=True)
-
-                for image_url, custom_name in parse_image_urls(content=content, custom_name_location=image_custom_name_location):
+                for custom_name in parse_and_get_name(content=content):
+                    pass
+                for index, image_url in enumerate(parse_image_urls(content=content)):
                     csv_manager.save_url_to_csv(image_url)
+                    customized_name = (f"{custom_name} - {index:02}")
+                    print(customized_name)
                     get_and_save_image_to_file(
-                        image_url, output_dir=output_directory, custom_filename=custom_name
-                    )
+                        image_url, output_dir=output_directory, custom_filename=customized_name)
+                    
             else:
                 # Logging when empty content is returned for a URL
                 logging.warning(f"Empty content returned for URL: {url}")
