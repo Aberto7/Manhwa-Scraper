@@ -9,6 +9,16 @@ from bs4 import BeautifulSoup               # For HTML parsing
 from pathlib import Path                    # For handling file paths
 from PIL import Image                       # For image processing
 from selenium import webdriver              # For web scraping with a headless browser
+import hashlib                              # For hashing image content
+import io                                   # For handling bytes streams
+import pandas as pd                         # For handling CSV files
+import requests                             # For making HTTP requests
+import os.path                              # For file path operations
+import logging                              # For logging errors
+from bs4 import BeautifulSoup               # For HTML parsing
+from pathlib import Path                    # For handling file paths
+from PIL import Image                       # For image processing
+from selenium import webdriver              # For web scraping with a headless browser
 from selenium.webdriver import EdgeOptions  # For configuring headless browser options
 
 # Configuring logging to write errors to a file
